@@ -36,19 +36,30 @@ body {
 }
 .correct { color: green; }
 .wrong { color: red; }
+
+/* 쪽지 + 팝업 애니메이션 */
 #note {
   position: absolute;
   top: 20%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(0);
   background: #fff8dc;
-  border: 2px solid #000;
-  padding: 15px;
-  border-radius: 10px;
+  border: 2px solid #d4af37;
+  padding: 20px;
+  border-radius: 12px;
   font-family: 'Bradley Hand', 'Comic Sans MS', cursive;
+  font-size: 18px;
   display: none;
   text-align: center;
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
   z-index: 10;
+  line-height: 1.5;
+}
+
+@keyframes popUp {
+  0% { transform: translate(-50%, -50%) scale(0); }
+  60% { transform: translate(-50%, -50%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1); }
 }
 </style>
 </head>
@@ -56,8 +67,9 @@ body {
 <h2>숨은그림찾기 게임 (총 6개)</h2>
 <div id="game-container">
   <img id="game-image" src="image/숨은그림찾기.png" alt="숨은그림찾기">
-  <div id="note">모든 숨은 그림을 찾으셨습니다!<br>
-                 퍼즐 조각은 의자 밑에 있습니다!
+  <div id="note">
+    <strong>모든 숨은 그림을 찾으셨습니다!</strong><br>
+    퍼즐의 힌트는 의자 밑에 있습니다.
   </div>
 </div>
 
@@ -71,8 +83,7 @@ const hiddenSpots = [
   {x: 0.866, y: 0.317},
   {x: 0.730, y: 0.394}
 ];
-
-const tolerance = 0.05; // 허용 범위
+const tolerance = 0.05;
 let foundSpots = Array(hiddenSpots.length).fill(false);
 
 const gameImage = document.getElementById('game-image');
@@ -95,16 +106,18 @@ function handleClick(e){
 
   const marker = document.createElement('div');
   marker.classList.add('marker');
-  // 모바일/PC 모두 정확한 위치
-  marker.style.left = ((clickX) * rect.width) + 'px';
-  marker.style.top = ((clickY) * rect.height) + 'px';
+  marker.style.left = (clickX * rect.width) + 'px';
+  marker.style.top = (clickY * rect.height) + 'px';
 
   if(foundIndex !== -1){
     marker.classList.add('correct');
     marker.textContent='⭕';
     foundSpots[foundIndex] = true;
 
-    if(foundSpots.every(v=>v)) note.style.display = 'block';
+    if(foundSpots.every(v=>v)) {
+      note.style.display = 'block';
+      note.style.animation = 'popUp 0.6s forwards';
+    }
   } else {
     marker.classList.add('wrong');
     marker.textContent='❌';
@@ -113,9 +126,8 @@ function handleClick(e){
   gameContainer.appendChild(marker);
 }
 
-// PC 클릭
+// 클릭 / 터치 이벤트
 gameImage.addEventListener('click', handleClick);
-// 모바일 터치
 gameImage.addEventListener('touchstart', function(e){
   e.preventDefault();
   const touch = e.touches[0];
