@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>숨은 그림 찾기</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background: #f0f8ff; }
+  h1 { color: #2c3e50; }
+  #game-image { position: relative; display: inline-block; }
+  .clickable { position: absolute; border: 2px solid transparent; cursor: pointer; }
+  .clickable.correct { border-color: limegreen; }
+  #message { margin-top: 20px; font-size: 1.2em; color: #e74c3c; }
+  #hint { margin-top: 20px; font-size: 1.2em; color: #2980b9; display: none; }
+</style>
+</head>
+<body>
+<h1>숨은 그림 찾기</h1>
+<p>그림 속 3가지 아이템을 모두 찾아 클릭하세요!</p>
+
+<div id="game-image">
+  <img src="church_scene.png" alt="교회 그림" width="600">
+  <!-- 위치 조정 (top, left) 픽셀 단위로 조정 가능 -->
+  <div class="clickable" id="item1" style="top: 120px; left: 80px; width: 50px; height: 50px;"></div>
+  <div class="clickable" id="item2" style="top: 250px; left: 300px; width: 50px; height: 50px;"></div>
+  <div class="clickable" id="item3" style="top: 400px; left: 500px; width: 50px; height: 50px;"></div>
+</div>
+
+<div id="message"></div>
+<div id="hint">축하합니다! 퍼즐 조각 힌트: 의자 밑을 확인하세요!</div>
+
+<script>
+  const items = document.querySelectorAll('.clickable');
+  let found = 0;
+
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      if (!item.classList.contains('correct')) {
+        item.classList.add('correct');
+        found++;
+        document.getElementById('message').textContent = `찾은 아이템 ${found}/3`;
+      }
+      if (found === 3) {
+        document.getElementById('hint').style.display = 'block';
+      }
+    });
+  });
+</script>
+</body>
+</html>
