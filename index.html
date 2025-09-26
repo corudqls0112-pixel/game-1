@@ -3,48 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>숨은 그림 찾기</title>
+<title>틀린그림찾기 퍼즐</title>
 <style>
-  body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background: #f0f8ff; }
-  h1 { color: #2c3e50; }
-  #game-image { position: relative; display: inline-block; }
-  .clickable { position: absolute; border: 2px solid transparent; cursor: pointer; }
-  .clickable.correct { border-color: limegreen; }
-  #message { margin-top: 20px; font-size: 1.2em; color: #e74c3c; }
-  #hint { margin-top: 20px; font-size: 1.2em; color: #2980b9; display: none; }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+  }
+  #game-container {
+    position: relative;
+    display: inline-block;
+    margin-top: 20px;
+  }
+  #game-image {
+    max-width: 800px;
+    cursor: pointer;
+    display: block;
+  }
+  .marker {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .correct {
+    color: green;
+  }
+  .wrong {
+    color: red;
+  }
+  #note {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff8dc;
+    border: 2px solid #000;
+    padding: 15px;
+    border-radius: 10px;
+    font-family: 'Bradley Hand', 'Comic Sans MS', cursive;
+    display: none;
+    z-index: 10;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
-<h1>숨은 그림 찾기</h1>
-<p>그림 속 3가지 아이템을 모두 찾아 클릭하세요!</p>
+<h2>틀린그림을 찾아보세요! (총 6개)</h2>
 
-<div id="game-image">
-  <img src="church_scene.png" alt="교회 그림" width="600">
-  <!-- 위치 조정 (top, left) 픽셀 단위로 조정 가능 -->
-  <div class="clickable" id="item1" style="top: 120px; left: 80px; width: 50px; height: 50px;"></div>
-  <div class="clickable" id="item2" style="top: 250px; left: 300px; width: 50px; height: 50px;"></div>
-  <div class="clickable" id="item3" style="top: 400px; left: 500px; width: 50px; height: 50px;"></div>
+<!-- 이미지 업로드 -->
+<input type="file" id="image-upload" accept="image/숨은그림찾기.png">
+<div id="game-container">
+  <img id="game-image" src="" alt="틀린그림찾기" style="display:none;">
+  <div id="note">퍼즐 조각 하나는 의자 밑에 있습니다.</div>
 </div>
 
-<div id="message"></div>
-<div id="hint">축하합니다! 퍼즐 조각 힌트: 의자 밑을 확인하세요!</div>
-
 <script>
-  const items = document.querySelectorAll('.clickable');
-  let found = 0;
+const gameImage = document.getElementById('game-image');
+const gameContainer = document.getElementById('game-container');
+const note = document.getElementById('note');
+const imageUpload = document.getElementById('image-upload');
 
-  items.forEach(item => {
-    item.addEventListener('click', () => {
-      if (!item.classList.contains('correct')) {
-        item.classList.add('correct');
-        found++;
-        document.getElementById('message').textContent = `찾은 아이템 ${found}/3`;
-      }
-      if (found === 3) {
-        document.getElementById('hint').style.display = 'block';
-      }
-    });
+// 틀린 그림 위치 (x, y 비율 기준, 예시)
+const wrongSpots = [
+  {x: 0.15, y: 0.2},
+  {x: 0.35, y: 0.3},
+  {x: 0.55, y: 0.25},
+  {x: 0.25, y: 0.6},
+  {x: 0.65, y: 0.5},
+  {x: 0.8, y: 0.7}
+];
+const tolerance = 0.05;
+let foundSpots = Array(wrongSpots.length).fill(false);
+
+// 이미지 업로드 처리
+imageUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    gameImage.src = event.target.result;
+    gameImage.style.display = 'block';
+  }
+  reader.readAsDataURL(file);
+});
+
+// 클릭 이벤트
+gameImage.addEventListener('click', (e) => {
+  const rect = gameImage.getBoundingClientRect();
+  const clickX = (e.clientX - rect.left) / rect.width;
+  const clickY = (e.clientY - rect.top) / rect.height;
+
+  let foundIndex = -1;
+  wrongSpots.forEach((spot, index) => {
+    if (!foundSpots[index] &&
+        Math.abs(clickX - spot.x) < tolerance &&
+        Math.abs(clickY - spot.y) < tolerance) {
+      foundIndex = index;
+    }
   });
+
+  const marker = document.createElement('div');
+  marker.classList.add('marker');
+  marker.style.left = e.offsetX + 'px';
+  marker.style.top = e.offsetY + 'px';
+
+  if (foundIndex !== -1) {
+    marker.classList.add('correct');
+    marker.textContent = '⭕';
+    foundSpots[foundIndex] = true;
+
+    if (foundSpots.every(v => v)) {
+      note.style.display = 'block';
+    }
+  } else {
+    marker.classList.add('wrong');
+    marker.textContent = '❌';
+  }
+
+  gameContainer.appendChild(marker);
+});
 </script>
 </body>
 </html>
