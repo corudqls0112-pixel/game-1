@@ -121,6 +121,8 @@ function handleClick(e){
   } else {
     marker.classList.add('wrong');
     marker.textContent='❌';
+    // 1초 뒤 ❌ 마커 제거
+    setTimeout(() => { marker.remove(); }, 1000);
   }
 
   gameContainer.appendChild(marker);
