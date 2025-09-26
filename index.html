@@ -55,9 +55,8 @@ body {
 <body>
 <h2>숨은그림찾기 게임 (총 6개)</h2>
 <div id="game-container">
-  <!-- Base64 이미지 예시 -->
- <img src="image/숨은그림찾기.png" alt="숨은그림찾기">
-  <div id="note">퍼즐 조각 하나는 의자 밑에 있습니다.</div>
+  <img id="game-image" src="image/숨은그림찾기.png" alt="숨은그림찾기">
+  <div id="note">모든 숨은 그림을 찾으셨습니다!</div>
 </div>
 
 <script>
@@ -78,7 +77,7 @@ const gameImage = document.getElementById('game-image');
 const gameContainer = document.getElementById('game-container');
 const note = document.getElementById('note');
 
-gameImage.addEventListener('click', (e) => {
+function handleClick(e){
   const rect = gameImage.getBoundingClientRect();
   const clickX = (e.clientX - rect.left) / rect.width;
   const clickY = (e.clientY - rect.top) / rect.height;
@@ -94,8 +93,9 @@ gameImage.addEventListener('click', (e) => {
 
   const marker = document.createElement('div');
   marker.classList.add('marker');
-  marker.style.left = e.offsetX + 'px';
-  marker.style.top = e.offsetY + 'px';
+  // 모바일/PC 모두 정확한 위치
+  marker.style.left = ((clickX) * rect.width) + 'px';
+  marker.style.top = ((clickY) * rect.height) + 'px';
 
   if(foundIndex !== -1){
     marker.classList.add('correct');
@@ -109,6 +109,15 @@ gameImage.addEventListener('click', (e) => {
   }
 
   gameContainer.appendChild(marker);
+}
+
+// PC 클릭
+gameImage.addEventListener('click', handleClick);
+// 모바일 터치
+gameImage.addEventListener('touchstart', function(e){
+  e.preventDefault();
+  const touch = e.touches[0];
+  handleClick(touch);
 });
 </script>
 </body>
