@@ -3,78 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>틀린그림찾기 퍼즐</title>
+<title>숨은그림찾기 게임</title>
 <style>
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    font-family: 'Comic Sans MS', cursive, sans-serif;
-  }
-  #game-container {
-    position: relative;
-    display: inline-block;
-    margin-top: 20px;
-  }
-  #game-image {
-    max-width: 800px;
-    cursor: pointer;
-    display: block;
-  }
-  .marker {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    font-size: 24px;
-    font-weight: bold;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .correct {
-    color: green;
-  }
-  .wrong {
-    color: red;
-  }
-  #note {
-    position: absolute;
-    top: 20%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff8dc;
-    border: 2px solid #000;
-    padding: 15px;
-    border-radius: 10px;
-    font-family: 'Bradley Hand', 'Comic Sans MS', cursive;
-    display: none;
-    z-index: 10;
-    text-align: center;
-  }
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+#game-container {
+  position: relative;
+  display: inline-block;
+  margin-top: 20px;
+}
+#game-image {
+  max-width: 800px;
+  cursor: crosshair;
+  display: block;
+}
+.marker {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.correct { color: green; }
+.wrong { color: red; }
+#note {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff8dc;
+  border: 2px solid #000;
+  padding: 15px;
+  border-radius: 10px;
+  font-family: 'Bradley Hand', 'Comic Sans MS', cursive;
+  display: none;
+  text-align: center;
+  z-index: 10;
+}
 </style>
 </head>
 <body>
-<h2>틀린그림을 찾아보세요! (총 6개)</h2>
-
-<!-- 이미지 업로드 -->
-<input type="file" id="image-upload" accept="image/숨은그림찾기.png">
+<h2>숨은그림찾기 게임 (총 6개)</h2>
 <div id="game-container">
-  <img id="game-image" src="" alt="틀린그림찾기" style="display:none;">
+  <!-- Base64 이미지 예시 -->
+ <img src="image/숨은그림찾기.png" alt="숨은그림찾기">
   <div id="note">퍼즐 조각 하나는 의자 밑에 있습니다.</div>
 </div>
 
 <script>
-const gameImage = document.getElementById('game-image');
-const gameContainer = document.getElementById('game-container');
-const note = document.getElementById('note');
-const imageUpload = document.getElementById('image-upload');
-
-// 틀린 그림 위치 (x, y 비율 기준, 예시)
-const wrongSpots = [
+// 숨은 그림 좌표 (x, y 비율)
+const hiddenSpots = [
   {x: 0.874, y: 0.567},
   {x: 0.823, y: 0.669},
   {x: 0.235, y: 0.354},
@@ -82,33 +70,24 @@ const wrongSpots = [
   {x: 0.866, y: 0.317},
   {x: 0.730, y: 0.394}
 ];
-const tolerance = 0.05;
-let foundSpots = Array(wrongSpots.length).fill(false);
 
-// 이미지 업로드 처리
-imageUpload.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+const tolerance = 0.05; // 허용 범위
+let foundSpots = Array(hiddenSpots.length).fill(false);
 
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    gameImage.src = event.target.result;
-    gameImage.style.display = 'block';
-  }
-  reader.readAsDataURL(file);
-});
+const gameImage = document.getElementById('game-image');
+const gameContainer = document.getElementById('game-container');
+const note = document.getElementById('note');
 
-// 클릭 이벤트
 gameImage.addEventListener('click', (e) => {
   const rect = gameImage.getBoundingClientRect();
   const clickX = (e.clientX - rect.left) / rect.width;
   const clickY = (e.clientY - rect.top) / rect.height;
 
   let foundIndex = -1;
-  wrongSpots.forEach((spot, index) => {
-    if (!foundSpots[index] &&
-        Math.abs(clickX - spot.x) < tolerance &&
-        Math.abs(clickY - spot.y) < tolerance) {
+  hiddenSpots.forEach((spot,index) => {
+    if(!foundSpots[index] &&
+       Math.abs(clickX - spot.x) < tolerance &&
+       Math.abs(clickY - spot.y) < tolerance) {
       foundIndex = index;
     }
   });
@@ -118,17 +97,15 @@ gameImage.addEventListener('click', (e) => {
   marker.style.left = e.offsetX + 'px';
   marker.style.top = e.offsetY + 'px';
 
-  if (foundIndex !== -1) {
+  if(foundIndex !== -1){
     marker.classList.add('correct');
-    marker.textContent = '⭕';
+    marker.textContent='⭕';
     foundSpots[foundIndex] = true;
 
-    if (foundSpots.every(v => v)) {
-      note.style.display = 'block';
-    }
+    if(foundSpots.every(v=>v)) note.style.display = 'block';
   } else {
     marker.classList.add('wrong');
-    marker.textContent = '❌';
+    marker.textContent='❌';
   }
 
   gameContainer.appendChild(marker);
